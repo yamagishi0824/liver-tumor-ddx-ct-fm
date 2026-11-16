@@ -84,3 +84,19 @@ python scripts/analysis/fig_confusion.py
 - Each model accepts a single phase; phases are processed independently, and "4-phase" features are concatenations.
 - Tumor masks provided with the dataset are not used.
 - The RADAR code is licensed CC BY-NC-SA 4.0 by its authors; the patch in `patches/` modifies that code and is subject to the same license.
+
+## Citation
+
+If you use this code, please cite our preprint:
+
+> [Authors]. How Well Do Generalist CT Foundation Models Differentiate Liver Tumors? medRxiv [year]. doi:[to be added]
+
+```bibtex
+@article{liver_tumor_ddx_ct_fm,
+  title   = {How Well Do Generalist CT Foundation Models Differentiate Liver Tumors?},
+  author  = {[Authors]},
+  journal = {medRxiv},
+  year    = {[year]},
+  doi     = {[to be added]}
+}
+```
