@@ -84,10 +84,7 @@ SMALL = [(BOTTOM[0], "RADAR\nbenign vs malignant"), (BOTTOM[1], "Merlin\nbenign 
          (PAIR[0], "RADAR\nHCC vs HH"), (PAIR[1], "Merlin\nHCC vs HH")]
 for k, (args, t) in enumerate(SMALL):
     ax = draw(fig.add_subplot(gs[1, k]), *args, title=t, ylabel=(k == 0))
-fig.text(0.01, 0.01, "Cell shade = row-normalized %; text = count (row %). Linear probe: repeated stratified 5-fold CV "
-         "(5x5), out-of-fold probabilities averaged over repeats.\nHCC vs HH: true HCC/HH cases only; prediction = larger of "
-         "the HCC vs HH probabilities from the same 5-class model.", color=MUTED, fontsize=12)
-fig.subplots_adjust(left=0.09, right=0.99, top=0.95, bottom=0.08)
+fig.subplots_adjust(left=0.09, right=0.99, top=0.95, bottom=0.04)
 fig.savefig("results/figs/confusion.png", dpi=200)
 fig.savefig("results/figs/confusion.pdf")
 print("saved results/figs/confusion.{png,pdf}")

@@ -73,9 +73,13 @@ mkdir -p results/figs
 export MERLIN_DIR=results_merlin RADAR_FEAT_DIR=results_radar_feat
 python scripts/analysis/linear_probe.py merlin
 python scripts/analysis/linear_probe.py radar
-python scripts/analysis/eval_benchmark4.py
-python scripts/analysis/fig_zs_vs_lp.py
-python scripts/analysis/fig_confusion.py
+python scripts/analysis/eval_benchmark4.py                # Table 1 (linear probe columns)
+export MERLIN_PHENOTYPES=phenotypes.csv
+python scripts/analysis/eval_delta.py                     # zero-shot -> linear probe changes (Figure 1)
+python scripts/analysis/eval_delta.py pvp                 # same with PVP features only (Table S6)
+python scripts/analysis/fig_delta.py                      # Figure 1
+python scripts/analysis/fig_confusion.py                  # Figure 2
+python scripts/analysis/fig_score_dist.py                 # Figure 3
 ```
 
 ## Notes
@@ -87,16 +91,16 @@ python scripts/analysis/fig_confusion.py
 
 ## Citation
 
-If you use this code, please cite our preprint:
+If you use this code, please cite our preprint (arXiv):
 
-> [Authors]. How Well Do Generalist CT Foundation Models Differentiate Liver Tumors? medRxiv [year]. doi:[to be added]
+> [Authors]. How Well Do Generalist CT Foundation Models Differentiate Liver Tumors? arXiv:[to be added] [preprint]. [year].
 
 ```bibtex
-@article{liver_tumor_ddx_ct_fm,
-  title   = {How Well Do Generalist CT Foundation Models Differentiate Liver Tumors?},
-  author  = {[Authors]},
-  journal = {medRxiv},
-  year    = {[year]},
-  doi     = {[to be added]}
+@misc{liver_tumor_ddx_ct_fm,
+  title         = {How Well Do Generalist CT Foundation Models Differentiate Liver Tumors?},
+  author        = {[Authors]},
+  year          = {[year]},
+  eprint        = {[to be added]},
+  archivePrefix = {arXiv}
 }
 ```
