@@ -1,0 +1,32 @@
+#!/bin/bash
+#PBS -q regular-g
+#PBS -l select=1
+#PBS -l walltime=02:00:00
+#PBS -W group_list=YOUR_GROUP
+#PBS -j oe
+#PBS -N radar-mctlt-all
+# Process all downloaded tars not yet done: prep 4 phases (LAS) -> RADAR inference per phase.
+set -u
+R=${WORK_DIR:?set WORK_DIR to your working directory}
+M=$R/mctlt
+OUT=$R/results_mctlt
+module load python/3.10.16
+. $R/venv310/bin/activate
+nvidia-smi --query-gpu=name --format=csv,noheader
+mkdir -p $OUT; touch $OUT/done_ids.txt
+tag=run_$(date +%m%d_%H%M)
+ls $M/tars/*.tar | xargs -n1 basename | sed 's/\.tar$//' | sort > $OUT/$tag.avail
+comm -23 $OUT/$tag.avail <(sort $OUT/done_ids.txt) > $OUT/$tag.ids
+echo "$tag: $(wc -l < $OUT/$tag.ids) cases"
+W=$M/work/$tag; mkdir -p $W
+time python -I $R/scripts/prep_mctlt.py $M/tars $W/nii $OUT/$tag.ids > $W/prep.log 2>&1 || { echo FAIL prep; exit 1; }
+grep MISSING $W/prep.log
+cd $R/damo-radar/RADAR_inference
+ok=1
+for p in nc art pvp delay; do
+  /usr/bin/time -f "$p %es" python inference_demo.py --img_dir $W/nii/$p --save_dir $W/res --save_tag $p > $W/infer_$p.log 2>&1 \
+    && cp $W/res/RADAR_infer_results_$p.csv $OUT/${tag}_$p.csv || { echo "FAIL infer $p"; ok=0; }
+  tail -1 $W/infer_$p.log
+done
+[ $ok -eq 1 ] && cat $OUT/$tag.ids >> $OUT/done_ids.txt && rm -rf $W/nii
+echo DONE $tag

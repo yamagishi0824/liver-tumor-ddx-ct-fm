@@ -1,0 +1,19 @@
+--- inference_demo.py	2026-11-16 10:02:25.000000000 +0900
++++ inference_feat.py	2026-11-16 14:28:13.852800369 +0900
+@@ -371,7 +371,7 @@
+ 
+                 image_feat = F.normalize(self.vision_projs[organ_id](updated_query_token), dim=-1)
+                 
+-                organ_feat_dict[organ_name] = image_feat.cpu().tolist()
++                organ_feat_dict[organ_name] = {'proj': image_feat.float().cpu().numpy().reshape(-1), 'query': updated_query_token.float().cpu().numpy().reshape(-1)}
+ 
+                 for item in organ_logits.keys():
+                     if isinstance(item, str):
+@@ -549,6 +549,7 @@
+     else:
+         results = results
+     
++    torch.save(organ_feat_dict, os.path.join(save_dir, f'RADAR_organ_feats_{save_tag}.pt'))
+     pd.DataFrame(
+         results,
+         columns=['file_name'] + [f'{k} ({datafolder.english_mapping[k]})' for k in datafolder.test_items]

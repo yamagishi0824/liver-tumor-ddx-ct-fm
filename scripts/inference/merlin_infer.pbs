@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -q regular-g
+#PBS -l select=1
+#PBS -l walltime=02:00:00
+#PBS -W group_list=YOUR_GROUP
+#PBS -j oe
+#PBS -N merlin-mctlt
+set -u
+R=${WORK_DIR:?set WORK_DIR to your working directory}
+M=$R/mctlt
+RAW=$M/nii_raw
+module load python/3.10.16
+. $R/venv_merlin/bin/activate
+export HF_HOME=$R/hf_cache HF_HUB_OFFLINE=1
+nvidia-smi --query-gpu=name --format=csv,noheader
+# extract original-orientation NIfTI (Merlin reorients to RAS itself); parallel, skip existing
+for p in nc art pvp delay; do mkdir -p $RAW/$p; done
+time (ls $M/tars/*.tar | xargs -P 32 -I{} sh -c 'id=$(basename {} .tar); for p in nc art pvp delay; do [ -s '$RAW'/$p/$id.nii.gz ] || tar xf {} -O ./NIFTI/$p.nii.gz > '$RAW'/$p/$id.nii.gz || echo MISSING $id $p; done')
+for p in nc art pvp delay; do echo $p $(ls $RAW/$p | wc -l); done
+time python $R/scripts/merlin_infer.py $RAW $R/results_merlin
+echo DONE

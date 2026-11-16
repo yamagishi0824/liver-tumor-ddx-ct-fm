@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -q regular-g
+#PBS -l select=1
+#PBS -l walltime=02:00:00
+#PBS -W group_list=YOUR_GROUP
+#PBS -j oe
+#PBS -N radar-feat
+# RADAR inference on all 517 x 4 phases, saving organ features (+ scores).
+set -u
+R=${WORK_DIR:?set WORK_DIR to your working directory}
+M=$R/mctlt
+module load python/3.10.16
+. $R/venv310/bin/activate
+nvidia-smi --query-gpu=name --format=csv,noheader
+time python -I $R/scripts/reorient_dir.py $M/nii_raw $M/nii_las 48
+for p in nc art pvp delay; do echo $p $(ls $M/nii_las/$p | wc -l); done
+cd $R/damo-radar/RADAR_inference
+for p in nc art pvp delay; do
+  /usr/bin/time -f "$p %es" python inference_feat.py --img_dir $M/nii_las/$p --save_dir $R/results_radar_feat --save_tag $p > $R/results_radar_feat_$p.log 2>&1 || echo "FAIL $p"
+  tail -1 $R/results_radar_feat_$p.log
+done
+ls -la $R/results_radar_feat
+echo DONE
