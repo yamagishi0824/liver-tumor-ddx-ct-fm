@@ -34,8 +34,10 @@ scripts/
     eval_zeroshot.py         # zero-shot: RADAR 4-class and Merlin 3-class (HH excluded) benchmark-format metrics (bootstrap 95% CI)
     linear_probe.py          # linear probing (Merlin or RADAR features), out-of-fold predictions
     eval_benchmark4.py       # linear-probe results in the dataset benchmark format (bootstrap 95% CI)
-    fig_zs_vs_lp.py          # Figure 1: zero-shot vs linear-probe sensitivity/accuracy (grouped bars)
-    fig_confusion.py         # confusion-matrix figure
+    eval_delta.py            # change from zero-shot to linear probing (paired bootstrap 95% CI); "pvp" = PVP features only
+    fig_delta.py             # Figure 1: changes in sensitivity, specificity, F1, and AUC
+    fig_confusion.py         # Figure 2: confusion matrices
+    fig_score_dist.py        # Figure 3: RADAR zero-shot scores and linear-probe probabilities by true tumor type
 patches/
   radar_inference_save_organ_features.patch   # minimal change to RADAR's inference_demo.py
 ```
