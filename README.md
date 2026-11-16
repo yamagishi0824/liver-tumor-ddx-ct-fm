@@ -31,7 +31,7 @@ scripts/
     miyabi_infer.pbs         # RADAR inference without feature saving (scores only)
     merlin_infer.py/.pbs     # Merlin inference: 2048-d / 512-d image features + 1692 phecode probabilities
   analysis/
-    eval_zeroshot.py         # zero-shot: RADAR benchmark-format metrics, Merlin phecode AUCs (bootstrap 95% CI)
+    eval_zeroshot.py         # zero-shot: RADAR 4-class and Merlin 3-class (HH excluded) benchmark-format metrics (bootstrap 95% CI)
     linear_probe.py          # linear probing (Merlin or RADAR features), out-of-fold predictions
     eval_benchmark4.py       # linear-probe results in the dataset benchmark format (bootstrap 95% CI)
     fig_confusion.py         # confusion-matrix figure

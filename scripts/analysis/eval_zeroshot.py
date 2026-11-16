@@ -1,7 +1,8 @@
 """Zero-shot evaluation.
 RADAR: four-class differentiation (HCC, ICC, HH, LM = BCLM+CRLM) in the MCT-LTDiag benchmark format, using the
 scores of four liver findings; prediction = finding with the highest score; 95% CI by case-level bootstrap.
-Merlin: one-vs-rest AUC of phecode probabilities (HCC 155.1, ICC 155, LM 198.4); no phecode for HH.
+Merlin: three-class differentiation (HCC, ICC, LM) in cases without HH (no phecode corresponds to HH),
+prediction = phecode with the highest probability (HCC 155.1, ICC 155, LM 198.4); same metrics and bootstrap CIs.
 Usage: python eval_zeroshot.py <labels_csv(id,type)> <radar_results_dir> <merlin_npz_dir> <phenotypes_csv> <out_dir>
   radar_results_dir: RADAR_infer_results_{nc,art,pvp,delay}.csv ; merlin_npz_dir: merlin_{phase}.npz
 """
@@ -61,18 +62,32 @@ def main():
     pd.DataFrame(rows).to_csv(os.path.join(out_dir, "radar_zeroshot_benchmark4.csv"))
 
     ph = pd.read_csv(pheno_csv, dtype={"phecode": str})
-    out = []
+    cl3 = ["HCC", "ICC", "LM"]
+
+    def metrics3(y, P):
+        pred = np.array(cl3)[P.argmax(1)]
+        out = {}
+        for i, k in enumerate(cl3):
+            t, p = y == k, pred == k
+            tp, tn, fp, fn = (t & p).sum(), (~t & ~p).sum(), (~t & p).sum(), (t & ~p).sum()
+            out[f"{k} Specificity"] = tn / (tn + fp)
+            out[f"{k} Sensitivity"] = tp / (tp + fn)
+            out[f"{k} F1"] = f1_score(t, p)
+            out[f"{k} AUC"] = roc_auc_score(t, P[:, i])
+        out["Overall Accuracy"] = accuracy_score(y, pred)
+        out["Overall Kappa"] = cohen_kappa_score(y, pred)
+        return out
+
+    rows = {}
     for p in PHASES:
         z = np.load(os.path.join(merlin_dir, f"merlin_{p}.npz"))
         y = pd.Series(z["ids"]).map(lab).values
-        r = {"phase": p}
-        for k, (code, pos) in PHECODE.items():
-            s = z["pheno_prob"][:, ph.index[ph.phecode == code][0]]
-            t = np.isin(y, pos).astype(int)
-            ci = boot_ci(t, s[:, None], lambda yy, ss: {"AUC": roc_auc_score(yy, ss[:, 0])})["AUC"]
-            r[f"{k} ({code})"] = f"{ci[0]:.4f} ({ci[1]:.4f}-{ci[2]:.4f})"
-        out.append(r)
-    pd.DataFrame(out).to_csv(os.path.join(out_dir, "merlin_zeroshot_auc.csv"), index=False)
+        y = np.where(np.isin(y, ["BCLM", "CRLM"]), "LM", y)
+        keep = y != "HH"
+        P = np.stack([z["pheno_prob"][keep, ph.index[ph.phecode == PHECODE[k][0]][0]] for k in cl3], 1)
+        rows[f"Merlin zero-shot 3class ({p})"] = {k: f"{v:.4f} ({lo:.4f}-{hi:.4f})"
+                                                  for k, (v, lo, hi) in boot_ci(y[keep], P, metrics3).items()}
+    pd.DataFrame(rows).to_csv(os.path.join(out_dir, "merlin_zeroshot_3class.csv"))
     print("saved to", out_dir)
 
 
