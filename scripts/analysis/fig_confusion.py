@@ -41,11 +41,11 @@ def bm(v):
     return np.where(np.asarray(v) == "HH", BM[1], BM[0])
 
 
-TITLES = ["Merlin linear probe\n(4-phase concat)", "RADAR linear probe\n(liver features, 4-phase concat)"]
-TOP = [(y_m, pred_m, ORDER5, ORDER5),
-       (y_rl, pred_rl, ORDER5, ORDER5)]
+TITLES = ["RADAR linear probe\n(liver features, 4-phase concat)", "Merlin linear probe\n(4-phase concat)"]
+TOP = [(y_rl, pred_rl, ORDER5, ORDER5),
+       (y_m, pred_m, ORDER5, ORDER5)]
 BOTTOM = [(bm(y), bm(p), BM, BM) for y, p, _, _ in TOP]
-PAIR = [(*pair_m, ["HCC", "HH"], ["HCC", "HH"]), (*pair_rl, ["HCC", "HH"], ["HCC", "HH"])]
+PAIR = [(*pair_rl, ["HCC", "HH"], ["HCC", "HH"]), (*pair_m, ["HCC", "HH"], ["HCC", "HH"])]
 
 
 def draw(ax, yt, yp, rows, cols, title=None, ylabel=False):
@@ -80,8 +80,8 @@ fig.patch.set_facecolor(SURFACE)
 gs = GridSpec(2, 4, figure=fig, height_ratios=[3.6, 2.2], hspace=0.28, wspace=0.75)
 for k in range(2):
     draw(fig.add_subplot(gs[0, 2 * k:2 * k + 2]), *TOP[k], title=TITLES[k], ylabel=(k == 0))
-SMALL = [(BOTTOM[0], "Merlin\nbenign vs malignant"), (BOTTOM[1], "RADAR\nbenign vs malignant"),
-         (PAIR[0], "Merlin\nHCC vs HH"), (PAIR[1], "RADAR\nHCC vs HH")]
+SMALL = [(BOTTOM[0], "RADAR\nbenign vs malignant"), (BOTTOM[1], "Merlin\nbenign vs malignant"),
+         (PAIR[0], "RADAR\nHCC vs HH"), (PAIR[1], "Merlin\nHCC vs HH")]
 for k, (args, t) in enumerate(SMALL):
     ax = draw(fig.add_subplot(gs[1, k]), *args, title=t, ylabel=(k == 0))
 fig.text(0.01, 0.01, "Cell shade = row-normalized %; text = count (row %). Linear probe: repeated stratified 5-fold CV "
